@@ -43,6 +43,8 @@ The following image presents an example of how the task was presented to the wor
         * **vgId**: Visual Genome Id of the image.
         * **Relevance**: is a three-element array representing the number of votes for Relevant, Non Relevant, and Unsure, respectively.
 
+The folder `repro-kit` contains scripts to reproduce the reported results. More information can be found on the [readme file of the repro-kit](repro-kit/README.md).
+
 ## Citation
 
 ```

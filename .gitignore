@@ -1,0 +1,9 @@
+
+repro-kit/trans_*/*
+repro-kit/clip_*/*
+repro-kit/trans_*/*
+repro-kit/fast_blip_*/*
+repro-kit/blip2_*/*
+repro-kit/__pycache__/*
+repro-kit/.vscode/*
+repro-kit/datasets/*.zip

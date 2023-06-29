@@ -3,7 +3,7 @@
 ConQA is a crowd-sourced dataset extending the Visual Genome ids for the images. The goal of the dataset is to provide a benchmark for the image retrieval task. The dataset consists of 80 queries divided into 50 conceptual and 30 descriptive queries. A descriptive query mentions some of the objects in the image, for instance, `people chopping vegetables`. 
 While, a conceptual query does not mention objects or only refers to objects in a general context, e.g., `working class life`. More information about the dataset can be found in the paper.
 
-Images and scene graphs can be downloaded from the [Visual Genome Download page](http://visualgenome.org/api/v0/api_home.html). For creating the dataset, we used the most up-to-date files up to version 1.4. The mapping between Visual Genome ids and MS-Coco ids can be found in the file [image_data.json.zip](http://visualgenome.org/static/data/dataset/image_data.json.zip).
+Images and scene graphs can be downloaded from the [Visual Genome Download page](https://homes.cs.washington.edu/~ranjay/visualgenome/api.html). For creating the dataset, we used the most up-to-date files up to version 1.4. The mapping between Visual Genome ids and MS-Coco ids can be found in the file [image_data.json.zip](https://homes.cs.washington.edu/~ranjay/visualgenome/data/dataset/image_data.json.zip).
 
 The captions for the images are available on the [MS-Coco download site](https://cocodataset.org/#download). We used the 2017 Train/Val annotations.
 

@@ -15,8 +15,8 @@ From Visual Genome, the following files are required:
 * `objects.json.zip`: It contains the objects found on the images.
 * `relationships.json.zip`: It contains relationships among objects in the images. 
 
-They can be found on the [Visual Genome Web site](http://visualgenome.org).
+They can be found on the [Visual Genome Web site](https://homes.cs.washington.edu/~ranjay/visualgenome/).
 
-Alternatively, the Json files can be found in [Kaggle w/o images](https://www.kaggle.com/datasets/mathurinache/visual-genome). In this case, the files should be zipped separately and placed in the datasets folder. For instance, `objects.json` should be zipped into `objects.json.zip`. The image files are in [`images.zip`](https://cs.stanford.edu/people/rak248/VG_100K_2/images.zip) and `images2.zip`, respectively.
+Alternatively, the Json files can be found in [Kaggle w/o images](https://www.kaggle.com/datasets/mathurinache/visual-genome). In this case, the files should be zipped separately and placed in the datasets folder. For instance, `objects.json` should be zipped into `objects.json.zip`. The image files are in [`images.zip`](https://cs.stanford.edu/people/rak248/VG_100K_2/images.zip) and [`images2.zip`](https://cs.stanford.edu/people/rak248/VG_100K_2/images2.zip), respectively.
 
 An older version of Visual Genome with images can be found on [Kaggle w images](https://www.kaggle.com/datasets/dannywu375/visualgenome). In this case, the folder `VG_100K` must be placed on the `images.zip` file and `VG_100K_2` must be placed on the `images2.zip` file.

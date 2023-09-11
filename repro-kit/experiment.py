@@ -9,13 +9,14 @@ if os.path.realpath(fusion_path) not in sys.path:
     sys.path.insert(1, os.path.realpath(fusion_path))
 
 
-from search_utils import load_images, load_queries_relevants,load_manual, merge_rels, recall, filter_tagged_images, precision, get_abstract_queries, ndcg, load_exp_gpt_j6
+from search_utils import load_images, load_queries_relevants,load_manual, merge_rels, filter_tagged_images, get_abstract_queries, load_exp_gpt_j6
 from blip_search import FastBLIPITCSearchEngine, load_default_blip_model
 from blip2_search import FastBLIP2ITCSearchEngine, FastBLIP2ITMSearchEngine, load_default_blip2_model
 from clip_search import CLIPSearchEngine
 from text_search import TextSearchEngine
 from ds_utils import load_full_vg_14, get_coco_caption
-import pickle
+
+from ranx import Qrels, Run, evaluate
 
 
 def load_data(ds_size, seeds):
@@ -168,22 +169,42 @@ def get_queries_gt(imgs, q, rs, abstract, ds):
         return nq, nrs
 
 
-def eval(search_engine, queries, gt, exp_name):
+def gt_to_qrels(gt):
+    gt = {str(q): {str(r): 1 for r in rels} for q, rels in gt.items()}
+    return Qrels(gt)
+
+
+def rankings_to_run(rankings):
+    rankings = {str(q):{str(idx): len(ranking) - i for i, idx in enumerate(ranking)} \
+                for q, ranking in rankings.items()}
+    return Run(rankings)
+
+
+def eval(search_engine, queries, gt, ds_size, engine, model, ds_eval, metrics, save_run):
     search = {}
     for idx, text in tqdm(queries.items()):
         search[idx] = search_engine.search_text(text)[0]
-    nd = ndcg(search, gt)
-    nd_1 = ndcg(search, gt, k=1)
-    nd_10 = ndcg(search, gt, k=10)
-    nd_100 = ndcg(search, gt, k=100)
-    rec_100 = recall(search, gt, k=100)
-    rec_200 = recall(search, gt, k=200)
-    rec_500 = recall(search, gt, k=500)
-    rec_1000 = recall(search, gt, k=1000)
+    gt = gt_to_qrels(gt)
+    search = rankings_to_run(search)
+    
+    if save_run:
+        res_dir = 'results'
+        if not os.path.exists(res_dir):
+            os.makedirs(res_dir)
+        gt_path = f'{res_dir}{os.sep}gt-{ds_size}-{ds_eval}.trec'
+        file_model = model.replace("/", "_").replace("@","_")
+        run_path = f'{res_dir}{os.sep}run-{ds_size}-{ds_eval}-{engine}-{file_model}.trec'
+        if not os.path.exists(gt_path):
+            gt.save(gt_path)
+        if not os.path.exists(run_path):
+            search.save(run_path)
+
+    result = evaluate(gt, search, metrics=metrics)
+    print(f'{ds_size}, {engine}, {model}, {ds_eval}, {", ".join([str(result[m]) for m in metrics])}')
     #name = '+'.join(exp_name.split(', ')).replace('/', '-')
     #with open(f'{name}.pk', 'wb') as f:
     #    pickle.dump((search, gt), f)
-    print(f'{exp_name}, {nd_1[0]}, {nd_1[1]}, {nd_10[0]}, {nd_10[1]}, {nd_100[0]}, {nd_100[1]}, {nd[0]}, {nd[1]}, {rec_100[0]}, {rec_100[1]}, {rec_200[0]}, {rec_200[1]}, {rec_500[0]}, {rec_500[1]}, {rec_1000[0]}, {rec_1000[1]}')
+    #print(f'{ds_size}, {engine}, {model}, {ds_eval}, {nd_1[0]}, {nd_1[1]}, {nd_10[0]}, {nd_10[1]}, {nd_100[0]}, {nd_100[1]}, {nd[0]}, {nd[1]}, {rec_100[0]}, {rec_100[1]}, {rec_200[0]}, {rec_200[1]}, {rec_500[0]}, {rec_500[1]}, {rec_1000[0]}, {rec_1000[1]}')
     
     
     
@@ -197,12 +218,16 @@ def main():
                         choices=["RN50", "RN101", "RN50x4", "RN50x16", "RN50x64", "ViT-B/32", "ViT-B/16", "ViT-L/14", "ViT-L/14@336px", "all-mpnet-base-v2"]) 
     parser.add_argument('-e', '--dataset_eval', choices=['full', 'abs', 'nonabs', 'coco', 'extcoco', 'gptj6', 'gptj6-abs', 'gptj6-nonabs'])
     parser.add_argument('-t', '--headers', action='store_true')
+    parser.add_argument('-r', '--ranx_metrics', default='ndcg@1,ndcg@10,ndcg@100,ndcg,recall@100,recall@200,recall@500,recall@1000')
+    parser.add_argument('--save_experiment', action='store_true')
     args = parser.parse_args()
     ds_size = args.dataset_size
     engine = args.search_engine
     model = args.model
     ds_eval = args.dataset_eval
     headers = args.headers
+    metrics = args.ranx_metrics.split(',')
+    save_run = args.save_experiment
 
     print(f'Running: {ds_size}, {engine}, {model}, {ds_eval}', file=sys.stderr)
     imgs, q, _, rs, abstract = load_data(ds_size, args.add_seeds)
@@ -233,8 +258,8 @@ def main():
         search_engine = load_transformer(imgs, model, base)
     q, rs = get_queries_gt(imgs, q, rs, abstract, ds_eval)
     if headers:
-        print('exp, ds size, engine, model, ds_eval, NDGC@1, NDGC@1 Std, NDGC@10, NDGC@10 Std, NDGC@100, NDGC@100 Std, NDGC, NDGC Std, R@100, R@100 Std, R@200, R@200 Std, R@500, R@500 Std, R@1000, R@1000 Std')
-    eval(search_engine, q, rs, f'exp, {ds_size}, {engine}, {model}, {ds_eval}')
+        print('ds size, engine, model, ds_eval, ' + ', '.join(metrics))
+    eval(search_engine, q, rs, ds_size, engine, model, ds_eval, metrics, save_run)
     print('***********************************************************', file=sys.stderr)
     pass
 

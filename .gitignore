@@ -5,7 +5,8 @@ repro-kit/trans_*/*
 repro-kit/fast_blip_*/*
 repro-kit/blip2_*/*
 repro-kit/blip2itm_*/*
-repro-kit/BLIP/*
+repro-kit/BLIP/**
+repro-kit/results/**
 repro-kit/__pycache__/*
 repro-kit/.vscode/*
 repro-kit/datasets/*.zip

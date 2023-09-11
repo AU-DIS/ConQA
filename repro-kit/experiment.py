@@ -11,7 +11,7 @@ if os.path.realpath(fusion_path) not in sys.path:
 
 from search_utils import load_images, load_queries_relevants,load_manual, merge_rels, recall, filter_tagged_images, precision, get_abstract_queries, ndcg, load_exp_gpt_j6
 from blip_search import FastBLIPITCSearchEngine, load_default_blip_model
-from blip2_search import FastBLIP2ITCSearchEngine, load_default_blip2_model
+from blip2_search import FastBLIP2ITCSearchEngine, FastBLIP2ITMSearchEngine, load_default_blip2_model
 from clip_search import CLIPSearchEngine
 from text_search import TextSearchEngine
 from ds_utils import load_full_vg_14, get_coco_caption
@@ -46,6 +46,15 @@ def load_or_train_blip(images, base):
 
 def load_or_train_blip2(images, base):
     search_engine = FastBLIP2ITCSearchEngine(*(load_default_blip2_model()[:2]), inference_device='cuda')
+    if os.path.exists(base):
+        search_engine.load(base)
+    else:
+        search_engine.index(images)
+        search_engine.save(base)
+    return search_engine
+
+def load_or_train_blip2_itm(images, base):
+    search_engine = FastBLIP2ITMSearchEngine(*(load_default_blip2_model()[:2]), inference_device='cuda')
     if os.path.exists(base):
         search_engine.load(base)
     else:
@@ -182,7 +191,7 @@ def main():
     parser = argparse.ArgumentParser(prog = 'experiments', description = 'Runs Experiments')
     parser.add_argument('-z', '--dataset_size', choices=['small', 'full']) 
     parser.add_argument('--add_seeds', action='store_true')
-    parser.add_argument('-s', '--search_engine', choices=['clip', 'blip', 'blip2', 'text_graph']) 
+    parser.add_argument('-s', '--search_engine', choices=['clip', 'blip', 'blip2', 'blip2itm', 'text_graph']) 
     parser.add_argument('-m', '--model', 
                         default='ViT-B/32',
                         choices=["RN50", "RN101", "RN50x4", "RN50x16", "RN50x64", "ViT-B/32", "ViT-B/16", "ViT-L/14", "ViT-L/14@336px", "all-mpnet-base-v2"]) 
@@ -212,6 +221,11 @@ def main():
         if args.add_seeds:
             base = base + '_seeds'
         search_engine = load_or_train_blip2(imgs, base)
+    elif engine == 'blip2itm':
+        base = f'blip2itm_index_{ds_size}'
+        if args.add_seeds:
+            base = base + '_seeds'
+        search_engine = load_or_train_blip2_itm(imgs, base)
     elif engine == 'text_graph':
         base = f'trans_{model.replace("/", "_").replace("@","_")}_index_{ds_size}'
         if args.add_seeds:

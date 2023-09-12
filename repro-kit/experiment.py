@@ -18,6 +18,8 @@ from ds_utils import load_full_vg_14, get_coco_caption
 
 from ranx import Qrels, Run, evaluate
 
+NA = 'n/a'
+
 
 def load_data(ds_size, seeds):
     imgs = load_images()
@@ -193,7 +195,12 @@ def eval(search_engine, queries, gt, ds_size, engine, model, ds_eval, metrics, s
             os.makedirs(res_dir)
         gt_path = f'{res_dir}{os.sep}gt-{ds_size}-{ds_eval}.trec'
         file_model = model.replace("/", "_").replace("@","_")
-        run_path = f'{res_dir}{os.sep}run-{ds_size}-{ds_eval}-{engine}-{file_model}.trec'
+        if model != 'n/a':
+            run_path = f'{res_dir}{os.sep}run-{ds_size}-{ds_eval}-{engine}+{file_model}.trec'
+            search.name = f'{ds_size}-{ds_eval}-{engine}+{model}'
+        else:
+            run_path = f'{res_dir}{os.sep}run-{ds_size}-{ds_eval}-{engine}.trec'
+            search.name = f'{ds_size}-{ds_eval}-{engine}'
         if not os.path.exists(gt_path):
             gt.save(gt_path)
         if not os.path.exists(run_path):
@@ -256,6 +263,8 @@ def main():
         if args.add_seeds:
             base = base + '_seeds'
         search_engine = load_transformer(imgs, model, base)
+    if engine not in {'text_graph', 'clip'}:
+        model = NA
     q, rs = get_queries_gt(imgs, q, rs, abstract, ds_eval)
     if headers:
         print('ds size, engine, model, ds_eval, ' + ', '.join(metrics))

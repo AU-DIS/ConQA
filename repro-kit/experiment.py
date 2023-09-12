@@ -268,6 +268,8 @@ def main():
     q, rs = get_queries_gt(imgs, q, rs, abstract, ds_eval)
     if headers:
         print('ds size, engine, model, ds_eval, ' + ', '.join(metrics))
+    if args.add_seeds:
+        ds_eval += '+seeds'
     eval(search_engine, q, rs, ds_size, engine, model, ds_eval, metrics, save_run)
     print('***********************************************************', file=sys.stderr)
     pass

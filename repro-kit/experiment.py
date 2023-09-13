@@ -172,12 +172,14 @@ def get_queries_gt(imgs, q, rs, abstract, ds):
 
 
 def gt_to_qrels(gt):
-    gt = {str(q): {str(r): 1 for r in rels} for q, rels in gt.items()}
+    #Intern should reduce memory consumption
+    gt = {sys.intern(str(q)): {sys.intern(str(r)): 1 for r in rels} for q, rels in gt.items()}
     return Qrels(gt)
 
 
 def rankings_to_run(rankings):
-    rankings = {str(q):{str(idx): len(ranking) - i for i, idx in enumerate(ranking)} \
+    #Intern should reduce memory consumption
+    rankings = {sys.intern(str(q)):{sys.intern(str(idx)): len(ranking) - i for i, idx in enumerate(ranking)} \
                 for q, ranking in rankings.items()}
     return Run(rankings)
 
@@ -193,13 +195,13 @@ def eval(search_engine, queries, gt, ds_size, engine, model, ds_eval, metrics, s
         res_dir = 'results'
         if not os.path.exists(res_dir):
             os.makedirs(res_dir)
-        gt_path = f'{res_dir}{os.sep}gt-{ds_size}-{ds_eval}.trec'
+        gt_path = f'{res_dir}{os.sep}gt-{ds_size}-{ds_eval}.parquet'
         file_model = model.replace("/", "_").replace("@","_")
         if model != 'n/a':
-            run_path = f'{res_dir}{os.sep}run-{ds_size}-{ds_eval}-{engine}+{file_model}.trec'
+            run_path = f'{res_dir}{os.sep}run-{ds_size}-{ds_eval}-{engine}+{file_model}.parquet'
             search.name = f'{ds_size}-{ds_eval}-{engine}+{model}'
         else:
-            run_path = f'{res_dir}{os.sep}run-{ds_size}-{ds_eval}-{engine}.trec'
+            run_path = f'{res_dir}{os.sep}run-{ds_size}-{ds_eval}-{engine}.parquet'
             search.name = f'{ds_size}-{ds_eval}-{engine}'
         if not os.path.exists(gt_path):
             gt.save(gt_path)

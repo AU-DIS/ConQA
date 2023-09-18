@@ -9,7 +9,7 @@ import requests
 
 
 def read_images_ids():
-    data_path = f'datasets'
+    data_path = f'../../..'
     res = {}
     def add_to_dict(zip_path, res):
         with zipfile.ZipFile(zip_path) as zf:
@@ -171,7 +171,8 @@ def get_coco_caption():
     -------
     captions: image_id -> List of captions
     '''
-    data_path = f'datasets'
+    # data_path = f'datasets'
+    data_path = f'../../../VG1.4'
     coco_url = 'http://images.cocodataset.org/annotations/annotations_trainval2017.zip'
     meta_url = 'https://visualgenome.org/static/data/dataset/image_data.json.zip'
     coco_path = f'{data_path}{os.sep}annotations_trainval2017.zip'

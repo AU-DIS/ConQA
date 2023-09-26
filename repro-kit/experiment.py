@@ -10,16 +10,19 @@ if os.path.realpath(fusion_path) not in sys.path:
     sys.path.insert(1, os.path.realpath(fusion_path))
 
 
-from search_utils import load_images, load_queries_relevants,load_manual, merge_rels, recall, filter_tagged_images, precision, get_abstract_queries, ndcg, load_exp_gpt_j6
+from search_utils import load_images, load_queries_relevants,load_manual, merge_rels, filter_tagged_images, get_abstract_queries, load_exp_gpt_j6
 from blip_search import FastBLIPITCSearchEngine, load_default_blip_model
-from blip2_search import FastBLIP2ITCSearchEngine, load_default_blip2_model
+from blip2_search import FastBLIP2ITCSearchEngine, FastBLIP2ITMSearchEngine, load_default_blip2_model
 from clip_search import CLIPSearchEngine
 from text_search import TextSearchEngine
 
 from sgraf_search import SGRAFSearchEngine
 from naaf_search import NAAFSearchEngine
 from ds_utils import load_full_vg_14, get_coco_caption
-import pickle
+
+from ranx import Qrels, Run, evaluate
+
+NA = 'n/a'
 
 
 def load_data(ds_size, seeds):
@@ -50,6 +53,15 @@ def load_or_train_blip(images, base):
 
 def load_or_train_blip2(images, base):
     search_engine = FastBLIP2ITCSearchEngine(*(load_default_blip2_model()[:2]), inference_device='cuda')
+    if os.path.exists(base):
+        search_engine.load(base)
+    else:
+        search_engine.index(images)
+        search_engine.save(base)
+    return search_engine
+
+def load_or_train_blip2_itm(images, base):
+    search_engine = FastBLIP2ITMSearchEngine(*(load_default_blip2_model()[:2]), inference_device='cuda')
     if os.path.exists(base):
         search_engine.load(base)
     else:
@@ -173,77 +185,77 @@ def get_queries_gt(imgs, q, rs, abstract, ds):
         return nq, nrs
 
 
-def eval(search_engine, queries, gt, exp_name):
-    search = {}
+def gt_to_qrels(gt):
+    #Intern should reduce memory consumption
+    gt = {sys.intern(str(q)): {sys.intern(str(r)): 1 for r in rels} for q, rels in gt.items()}
+    return Qrels(gt)
 
-    # if len(queries)== 50:
-    #     print('conceptual')
-    #     conceptual_id = np.load('../../GraphCLIP-baselines/conceptual_id.npy')
-    #     i = 0
-    #     for idx, text in tqdm(queries.items()):
-    #         search[idx] = search_engine.search_text(conceptual_id[i])[0]
-    #         i += 1
-    # elif len(queries) == 30:
-    #     print('descriptive')
-    #     descriptive_id = np.load('../../GraphCLIP-baselines/descriptive_id.npy')
-    #     i = 0
-    #     for idx, text in tqdm(queries.items()):
-    #         search[idx] = search_engine.search_text(descriptive_id[i])[0]
-    #         i += 1
-    # else:
-    i = 0
+
+def rankings_to_run(rankings):
+    #Intern should reduce memory consumption
+    rankings = {sys.intern(str(q)):{sys.intern(str(idx)): len(ranking) - i for i, idx in enumerate(ranking)} \
+                for q, ranking in rankings.items()}
+    return Run(rankings)
+
+
+def eval(search_engine, queries, gt, ds_size, engine, model, ds_eval, metrics, save_run):
+    search = {} 
     
     for idx, text in tqdm(queries.items()):
-        search[idx] = search_engine.search_text(text, idx)[0]
-        i += 1
+        if engine == 'sgraf' or engine == 'naaf':
+            search[idx] = search_engine.search_text(text, idx)[0]
+        else:
+            search[idx] = search_engine.search_text(text)[0]
+    gt = gt_to_qrels(gt)
+    search = rankings_to_run(search)
+    
+    if save_run:
+        res_dir = 'results'
+        if not os.path.exists(res_dir):
+            os.makedirs(res_dir)
+        gt_path = f'{res_dir}{os.sep}gt-{ds_size}-{ds_eval}.parquet'
+        file_model = model.replace("/", "_").replace("@","_")
+        if model != 'n/a':
+            run_path = f'{res_dir}{os.sep}run-{ds_size}-{ds_eval}-{engine}+{file_model}.parquet'
+            search.name = f'{ds_size}-{ds_eval}-{engine}+{model}'
+        else:
+            run_path = f'{res_dir}{os.sep}run-{ds_size}-{ds_eval}-{engine}.parquet'
+            search.name = f'{ds_size}-{ds_eval}-{engine}'
+        if not os.path.exists(gt_path):
+            gt.save(gt_path)
+        if not os.path.exists(run_path):
+            search.save(run_path)
 
-    nd = ndcg(search, gt)
-    nd_1 = ndcg(search, gt, k=1)
-    nd_5 = ndcg(search, gt, k=5)
-    nd_10 = ndcg(search, gt, k=10)
-    rec_1 = recall(search, gt, k=1)
-    rec_5 = recall(search, gt, k=5)
-    rec_10 = recall(search, gt, k=10)
-    # rec_1000 = recall(search, gt, k=1000)
-    #name = '+'.join(exp_name.split(', ')).replace('/', '-')
-    #with open(f'{name}.pk', 'wb') as f:
-    #    pickle.dump((search, gt), f)
-    # print(f'{exp_name}, {nd_1[0]}, {nd_1[1]}, {nd_10[0]}, {nd_10[1]}, {nd_100[0]}, {nd_100[1]}, {nd[0]}, {nd[1]}, {rec_100[0]}, {rec_100[1]}, {rec_200[0]}, {rec_200[1]}, {rec_500[0]}, {rec_500[1]}, {rec_1000[0]}, {rec_1000[1]}')
-    
-    print(f'{exp_name}, ndcg,  {nd_1[0]}, {nd_5[0]}, {nd_10[0]}')
-    print(f'{exp_name}, recall,  {rec_1[0]}, {rec_5[0]}, {rec_10[0]}')
-    
+    result = evaluate(gt, search, metrics=metrics)
+    print(f'{ds_size}, {engine}, {model}, {ds_eval}, {", ".join([str(result[m]) for m in metrics])}')
+    pass
     
     
 def main():
     parser = argparse.ArgumentParser(prog = 'experiments', description = 'Runs Experiments')
     parser.add_argument('-z', '--dataset_size', choices=['small', 'full']) 
     parser.add_argument('--add_seeds', action='store_true')
-    parser.add_argument('-s', '--search_engine', choices=['clip', 'blip', 'blip2', 'text_graph', 'vsrn', 'vse_inf', 'sgraf', 'naaf']) 
+    parser.add_argument('-s', '--search_engine', choices=['clip', 'blip', 'blip2', 'blip2itm', 'text_graph', 'sgraf', 'naaf']) 
     parser.add_argument('-m', '--model', 
                         default='ViT-B/32',
                         choices=["RN50", "RN101", "RN50x4", "RN50x16", "RN50x64", "ViT-B/32", "ViT-B/16", "ViT-L/14", "ViT-L/14@336px", "all-mpnet-base-v2"]) 
     parser.add_argument('-e', '--dataset_eval', choices=['full', 'abs', 'nonabs', 'coco', 'extcoco', 'gptj6', 'gptj6-abs', 'gptj6-nonabs'])
     parser.add_argument('-t', '--headers', action='store_true')
+    parser.add_argument('-r', '--ranx_metrics', default='ndcg@1,ndcg@10,ndcg@100,ndcg,recall@100,recall@200,recall@500,recall@1000')
+    parser.add_argument('--save_experiment', action='store_true')
     args = parser.parse_args()
     ds_size = args.dataset_size
     engine = args.search_engine
     model = args.model
     ds_eval = args.dataset_eval
     headers = args.headers
+    metrics = args.ranx_metrics.split(',')
+    save_run = args.save_experiment
 
     print(f'Running: {ds_size}, {engine}, {model}, {ds_eval}', file=sys.stderr)
     imgs, q, _, rs, abstract = load_data(ds_size, args.add_seeds)
     
-    # with open('conqa-images.pkl', 'wb') as f:
-    #     pickle.dump(imgs, f)
-    
-    with open('conqa-queries.pkl', 'wb') as f:
-        pickle.dump(q, f)
-    
-    print(len(imgs))
-    print(len(q))
-    print(len(rs))
+   
     if engine == 'clip':
         base = f'clip_{model.replace("/", "_").replace("@","_")}_index_{ds_size}'
         if args.add_seeds:
@@ -259,24 +271,30 @@ def main():
         if args.add_seeds:
             base = base + '_seeds'
         search_engine = load_or_train_blip2(imgs, base)
-        
     elif engine == 'sgraf':
         search_engine = load_sgraf(imgs, ds_eval)
-        
     elif engine == 'naaf':
         search_engine = load_naaf(imgs, ds_eval)
-        
+    elif engine == 'blip2itm':
+        base = f'blip2itm_index_{ds_size}'
+        if args.add_seeds:
+            base = base + '_seeds'
+        search_engine = load_or_train_blip2_itm(imgs, base)
     elif engine == 'text_graph':
         base = f'trans_{model.replace("/", "_").replace("@","_")}_index_{ds_size}'
         if args.add_seeds:
             base = base + '_seeds'
         search_engine = load_transformer(imgs, model, base)
 
-    
+    if engine not in {'text_graph', 'clip'}:
+        model = NA
+
     q, rs = get_queries_gt(imgs, q, rs, abstract, ds_eval)
     if headers:
-        print('exp, ds size, engine, model, ds_eval, NDGC@1, NDGC@1 Std, NDGC@10, NDGC@10 Std, NDGC@100, NDGC@100 Std, NDGC, NDGC Std, R@100, R@100 Std, R@200, R@200 Std, R@500, R@500 Std, R@1000, R@1000 Std')
-    eval(search_engine, q, rs, f'exp, {ds_size}, {engine}, {model}, {ds_eval}')
+        print('ds size, engine, model, ds_eval, ' + ', '.join(metrics))
+    if args.add_seeds:
+        ds_eval += '+seeds'
+    eval(search_engine, q, rs, ds_size, engine, model, ds_eval, metrics, save_run)
     print('***********************************************************', file=sys.stderr)
     pass
 

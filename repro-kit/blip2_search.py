@@ -11,8 +11,8 @@ from tqdm.auto import tqdm
 from PIL import Image
 
 
-def load_default_blip2_model():
-    model, vis_processors, x = load_model_and_preprocess(name="blip2_image_text_matching", model_type="pretrain", is_eval=True, device="cpu")
+def load_default_blip2_model(model_type):
+    model, vis_processors, x = load_model_and_preprocess(name="blip2_image_text_matching", model_type=model_type, is_eval=True, device="cpu")
     return model, vis_processors["eval"]
     
     

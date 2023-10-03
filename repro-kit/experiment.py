@@ -16,12 +16,16 @@ from clip_search import CLIPSearchEngine
 from text_search import TextSearchEngine
 from ds_utils import load_full_vg_14, get_coco_caption
 
+from coco_utils import load_coco5k_queries, load_coco5k_imgs
 from ranx import Qrels, Run, evaluate
 
 NA = 'n/a'
 
 
 def load_data(ds_size, seeds):
+    if ds_size == 'coco5k':
+        imgs = load_coco5k_imgs()
+        return imgs, None, None, None, None
     imgs = load_images()
     q, r, rs = load_queries_relevants()
     abstract = get_abstract_queries()
@@ -37,8 +41,8 @@ def load_data(ds_size, seeds):
     return imgs, q, r, rs, abstract
 
 
-def load_or_train_blip(images, base):
-    search_engine = FastBLIPITCSearchEngine(load_default_blip_model(), inference_device='cpu')
+def load_or_train_blip(images, base, model):
+    search_engine = FastBLIPITCSearchEngine(load_default_blip_model(model), inference_device='cpu')
     if os.path.exists(base):
         search_engine.load(base)
     else:
@@ -47,8 +51,8 @@ def load_or_train_blip(images, base):
     return search_engine
 
 
-def load_or_train_blip2(images, base):
-    search_engine = FastBLIP2ITCSearchEngine(*(load_default_blip2_model()[:2]), inference_device='cuda')
+def load_or_train_blip2(images, base, model_type):
+    search_engine = FastBLIP2ITCSearchEngine(*(load_default_blip2_model(model_type)[:2]), inference_device='cuda')
     if os.path.exists(base):
         search_engine.load(base)
     else:
@@ -56,8 +60,8 @@ def load_or_train_blip2(images, base):
         search_engine.save(base)
     return search_engine
 
-def load_or_train_blip2_itm(images, base):
-    search_engine = FastBLIP2ITMSearchEngine(*(load_default_blip2_model()[:2]), inference_device='cuda')
+def load_or_train_blip2_itm(images, base, model_type):
+    search_engine = FastBLIP2ITMSearchEngine(*(load_default_blip2_model(model_type)[:2]), inference_device='cuda')
     if os.path.exists(base):
         search_engine.load(base)
     else:
@@ -129,6 +133,8 @@ def get_queries_gt(imgs, q, rs, abstract, ds):
                 rs[i] = {idx}
                 i += 1
         return q, rs
+    if ds == 'coco5k':
+        return load_coco5k_queries()
     if ds == 'gptj6':
         ext = load_exp_gpt_j6()
         nq = {}
@@ -219,13 +225,13 @@ def eval(search_engine, queries, gt, ds_size, engine, model, ds_eval, metrics, s
     
 def main():
     parser = argparse.ArgumentParser(prog = 'experiments', description = 'Runs Experiments')
-    parser.add_argument('-z', '--dataset_size', choices=['small', 'full']) 
+    parser.add_argument('-z', '--dataset_size', choices=['small', 'full', 'coco5k',]) 
     parser.add_argument('--add_seeds', action='store_true')
     parser.add_argument('-s', '--search_engine', choices=['clip', 'blip', 'blip2', 'blip2itm', 'text_graph']) 
     parser.add_argument('-m', '--model', 
                         default='ViT-B/32',
-                        choices=["RN50", "RN101", "RN50x4", "RN50x16", "RN50x64", "ViT-B/32", "ViT-B/16", "ViT-L/14", "ViT-L/14@336px", "all-mpnet-base-v2"]) 
-    parser.add_argument('-e', '--dataset_eval', choices=['full', 'abs', 'nonabs', 'coco', 'extcoco', 'gptj6', 'gptj6-abs', 'gptj6-nonabs'])
+                        choices=["RN50", "RN101", "RN50x4", "RN50x16", "RN50x64", "ViT-B/32", "ViT-B/16", "ViT-L/14", "ViT-L/14@336px", "all-mpnet-base-v2" , "pretrain", "coco", "pretrain-large", "coco-large"]) 
+    parser.add_argument('-e', '--dataset_eval', choices=['full', 'abs', 'nonabs', 'coco', 'extcoco', 'coco5k', 'gptj6', 'gptj6-abs', 'gptj6-nonabs'])
     parser.add_argument('-t', '--headers', action='store_true')
     parser.add_argument('-r', '--ranx_metrics', default='ndcg@1,ndcg@10,ndcg@100,ndcg,recall@100,recall@200,recall@500,recall@1000')
     parser.add_argument('--save_experiment', action='store_true')
@@ -238,6 +244,26 @@ def main():
     metrics = args.ranx_metrics.split(',')
     save_run = args.save_experiment
 
+    if ds_eval == 'coco5k' and ds_size != 'coco5k' or ds_eval != 'coco5k' and ds_size == 'coco5k':
+        print('If dataset_size and daset_eval is set to coco5k the other parameter should be coco5k')
+        exit()
+    
+    if engine == 'clip' and model not in ["RN50", "RN101", "RN50x4", "RN50x16", "RN50x64", "ViT-B/32", "ViT-B/16", "ViT-L/14", "ViT-L/14@336px"]:
+        print('Unsupported model for clip: "RN50", "RN101", "RN50x4", "RN50x16", "RN50x64", "ViT-B/32", "ViT-B/16", "ViT-L/14", "ViT-L/14@336px"')
+        exit()
+    
+    if (engine == 'blip2' or engine == 'blip2itm') and model not in ["pretrain", "coco"]:
+        print('Unsupported model for blip2: "pretrain", "coco"')
+        exit()
+
+    if engine == 'blip' and model not in ["pretrain", "coco", "pretrain-large", "coco-large"]:
+        print('Unsupported model for blip2: "pretrain", "coco", "pretrain-large", "coco-large"')
+        exit()
+
+    if engine == 'text_graph' and model not in ["all-mpnet-base-v2" ]:
+        print('Unsupported model for text_graph: "all-mpnet-base-v2" ')
+        exit()
+
     print(f'Running: {ds_size}, {engine}, {model}, {ds_eval}', file=sys.stderr)
     imgs, q, _, rs, abstract = load_data(ds_size, args.add_seeds)
     if engine == 'clip':
@@ -246,20 +272,20 @@ def main():
             base = base + '_seeds'
         search_engine = load_or_train_clip(imgs, model, base)
     elif engine == 'blip':
-        base = f'fast_blip_index_{ds_size}'
+        base = f'fast_blip_{model}_index_{ds_size}'
         if args.add_seeds:
             base = base + '_seeds'
-        search_engine = load_or_train_blip(imgs, base)
+        search_engine = load_or_train_blip(imgs, base, model)
     elif engine == 'blip2':
-        base = f'blip2_index_{ds_size}'
+        base = f'blip2_{model}_index_{ds_size}'
         if args.add_seeds:
             base = base + '_seeds'
-        search_engine = load_or_train_blip2(imgs, base)
+        search_engine = load_or_train_blip2(imgs, base, model)
     elif engine == 'blip2itm':
-        base = f'blip2itm_index_{ds_size}'
+        base = f'blip2itm_{model}_index_{ds_size}'
         if args.add_seeds:
             base = base + '_seeds'
-        search_engine = load_or_train_blip2_itm(imgs, base)
+        search_engine = load_or_train_blip2_itm(imgs, base, model)
     elif engine == 'text_graph':
         base = f'trans_{model.replace("/", "_").replace("@","_")}_index_{ds_size}'
         if args.add_seeds:

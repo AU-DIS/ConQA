@@ -22,10 +22,21 @@ class NotIndexedError:
     pass
 
 
-def load_default_blip_model():
+def load_default_blip_model(model_type):
     image_size = 384
-    model_url = 'https://storage.googleapis.com/sfr-vision-language-research/BLIP/models/model_base.pth'
-    model = blip_itm(pretrained=model_url, image_size=image_size, vit='base')
+    if model_type == 'pretrain':
+        model_url = 'https://storage.googleapis.com/sfr-vision-language-research/BLIP/models/model_base.pth'
+        size = 'base'
+    if model_type == 'coco':
+        model_url = 'https://storage.googleapis.com/sfr-vision-language-research/BLIP/models/model_base_retrieval_coco.pth'
+        size = 'base'
+    if model_type == 'pretrain-large':
+        model_url = 'https://storage.googleapis.com/sfr-vision-language-research/BLIP/models/model_large.pth'
+        size = 'large'
+    if model_type == 'coco-large':
+        model_url = 'https://storage.googleapis.com/sfr-vision-language-research/BLIP/models/model_large_retrieval_coco.pth'
+        size = 'large'
+    model = blip_itm(pretrained=model_url, image_size=image_size, vit=size)
     return model
 
 

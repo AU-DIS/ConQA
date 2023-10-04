@@ -291,7 +291,7 @@ def main():
         if args.add_seeds:
             base = base + '_seeds'
         search_engine = load_transformer(imgs, model, base)
-    if engine not in {'text_graph', 'clip'}:
+    if engine not in {'text_graph', 'clip', 'blip', 'blip2'}:
         model = NA
     q, rs = get_queries_gt(imgs, q, rs, abstract, ds_eval)
     if headers:

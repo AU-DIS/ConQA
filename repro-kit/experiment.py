@@ -4,6 +4,7 @@ import sys
 from tqdm.auto import tqdm
 import clip
 fusion_path = os.path.pardir
+import numpy as np
 
 if os.path.realpath(fusion_path) not in sys.path:
     sys.path.insert(1, os.path.realpath(fusion_path))
@@ -14,6 +15,9 @@ from blip_search import FastBLIPITCSearchEngine, load_default_blip_model
 from blip2_search import FastBLIP2ITCSearchEngine, FastBLIP2ITMSearchEngine, load_default_blip2_model
 from clip_search import CLIPSearchEngine
 from text_search import TextSearchEngine
+
+from sgraf_search import SGRAFSearchEngine
+from naaf_search import NAAFSearchEngine
 from ds_utils import load_full_vg_14, get_coco_caption
 
 from coco_utils import load_coco5k_queries, load_coco5k_imgs
@@ -92,6 +96,16 @@ def load_transformer(images, model, base):
         search_engine.save(base)
     return search_engine
 
+def load_sgraf(images, ds):
+    search_engine = SGRAFSearchEngine(ds)
+    search_engine.index(images)
+    return search_engine
+
+def load_naaf(images, ds):
+    search_engine = NAAFSearchEngine(ds)
+    search_engine.index(images)
+    return search_engine
+    
 
 def get_queries_gt(imgs, q, rs, abstract, ds):
     if ds == 'full':
@@ -191,9 +205,13 @@ def rankings_to_run(rankings):
 
 
 def eval(search_engine, queries, gt, ds_size, engine, model, ds_eval, metrics, save_run):
-    search = {}
+    search = {} 
+    
     for idx, text in tqdm(queries.items()):
-        search[idx] = search_engine.search_text(text)[0]
+        if engine == 'sgraf' or engine == 'naaf':
+            search[idx] = search_engine.search_text(text, idx)[0]
+        else:
+            search[idx] = search_engine.search_text(text)[0]
     gt = gt_to_qrels(gt)
     search = rankings_to_run(search)
     
@@ -216,18 +234,14 @@ def eval(search_engine, queries, gt, ds_size, engine, model, ds_eval, metrics, s
 
     result = evaluate(gt, search, metrics=metrics)
     print(f'{ds_size}, {engine}, {model}, {ds_eval}, {", ".join([str(result[m]) for m in metrics])}')
-    #name = '+'.join(exp_name.split(', ')).replace('/', '-')
-    #with open(f'{name}.pk', 'wb') as f:
-    #    pickle.dump((search, gt), f)
-    #print(f'{ds_size}, {engine}, {model}, {ds_eval}, {nd_1[0]}, {nd_1[1]}, {nd_10[0]}, {nd_10[1]}, {nd_100[0]}, {nd_100[1]}, {nd[0]}, {nd[1]}, {rec_100[0]}, {rec_100[1]}, {rec_200[0]}, {rec_200[1]}, {rec_500[0]}, {rec_500[1]}, {rec_1000[0]}, {rec_1000[1]}')
-    
+    pass
     
     
 def main():
     parser = argparse.ArgumentParser(prog = 'experiments', description = 'Runs Experiments')
     parser.add_argument('-z', '--dataset_size', choices=['small', 'full', 'coco5k',]) 
     parser.add_argument('--add_seeds', action='store_true')
-    parser.add_argument('-s', '--search_engine', choices=['clip', 'blip', 'blip2', 'blip2itm', 'text_graph']) 
+    parser.add_argument('-s', '--search_engine', choices=['clip', 'blip', 'blip2', 'blip2itm', 'text_graph', 'sgraf', 'naaf']) 
     parser.add_argument('-m', '--model', 
                         default='ViT-B/32',
                         choices=["RN50", "RN101", "RN50x4", "RN50x16", "RN50x64", "ViT-B/32", "ViT-B/16", "ViT-L/14", "ViT-L/14@336px", "all-mpnet-base-v2" , "pretrain", "coco", "pretrain-large", "coco-large"]) 
@@ -266,6 +280,8 @@ def main():
 
     print(f'Running: {ds_size}, {engine}, {model}, {ds_eval}', file=sys.stderr)
     imgs, q, _, rs, abstract = load_data(ds_size, args.add_seeds)
+    
+   
     if engine == 'clip':
         base = f'clip_{model.replace("/", "_").replace("@","_")}_index_{ds_size}'
         if args.add_seeds:
@@ -280,7 +296,15 @@ def main():
         base = f'blip2_{model}_index_{ds_size}'
         if args.add_seeds:
             base = base + '_seeds'
+<<<<<<< HEAD
         search_engine = load_or_train_blip2(imgs, base, model)
+=======
+        search_engine = load_or_train_blip2(imgs, base)
+    elif engine == 'sgraf':
+        search_engine = load_sgraf(imgs, ds_eval)
+    elif engine == 'naaf':
+        search_engine = load_naaf(imgs, ds_eval)
+>>>>>>> main
     elif engine == 'blip2itm':
         base = f'blip2itm_{model}_index_{ds_size}'
         if args.add_seeds:
@@ -291,8 +315,14 @@ def main():
         if args.add_seeds:
             base = base + '_seeds'
         search_engine = load_transformer(imgs, model, base)
+<<<<<<< HEAD
     if engine not in {'text_graph', 'clip', 'blip', 'blip2'}:
+=======
+
+    if engine not in {'text_graph', 'clip'}:
+>>>>>>> main
         model = NA
+
     q, rs = get_queries_gt(imgs, q, rs, abstract, ds_eval)
     if headers:
         print('ds size, engine, model, ds_eval, ' + ', '.join(metrics))

@@ -51,6 +51,8 @@ class SGRAFSearchEngine:
             return torch.from_numpy(np.load('./model_embeddings/sgraf_gpt_abs_conqa_sims.npz')['data'])
         elif dataset_eval == 'gptj6-nonabs':
             return torch.from_numpy(np.load('./model_embeddings/sgraf_gpt_nonabs_conqa_sims.npz')['data'])
+        elif dataset_eval == 'coco5k':
+            return torch.from_numpy(np.load('./model_embeddings/sgraf_coco5k_sims.npz')['data'])
         else:
             raise  ValueError('Invalid dataset for evaluation:' + dataset_eval)
             

@@ -302,6 +302,10 @@ def main():
         if args.add_seeds:
             base = base + '_seeds'
         search_engine = load_or_train_blip2_itm(imgs, base, model)
+    elif engine == 'sgraf':
+        search_engine = load_sgraf(imgs, ds_eval)
+    elif engine == 'naaf':
+        search_engine = load_naaf(imgs, ds_eval)
     elif engine == 'text_graph':
         base = f'trans_{model.replace("/", "_").replace("@","_")}_index_{ds_size}'
         if args.add_seeds:

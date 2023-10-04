@@ -7,7 +7,7 @@ from ds_utils import download_data
 def check_coco(data_path=f'datasets'):
     data_path = f'datasets'
     coco_captions_url = 'http://cs.stanford.edu/people/karpathy/deepimagesent/caption_datasets.zip'
-    images_url = 'hhttp://images.cocodataset.org/zips/val2014.zip'
+    images_url = 'http://images.cocodataset.org/zips/val2014.zip'
     coco_caption_path = f'{data_path}{os.sep}caption_datasets.zip'
     images_path = f'{data_path}{os.sep}val2014.zip'
     if not os.path.exists(coco_caption_path):

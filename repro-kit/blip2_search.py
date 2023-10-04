@@ -71,7 +71,7 @@ class FastBLIP2ITCSearchEngine:
             self.image_embeddings.append(image_feats.cpu())
         pass
                  
-    def index(self, images_path: Dict[int, Tuple[str, str]], batch_size=100) -> None:
+    def index(self, images_path: Dict[int, Tuple[str, str]], batch_size=50) -> None:
         if self.trained:
             self.model = self.model.to(self.indexing_device)
         self.image_embeddings = []

@@ -296,15 +296,7 @@ def main():
         base = f'blip2_{model}_index_{ds_size}'
         if args.add_seeds:
             base = base + '_seeds'
-<<<<<<< HEAD
         search_engine = load_or_train_blip2(imgs, base, model)
-=======
-        search_engine = load_or_train_blip2(imgs, base)
-    elif engine == 'sgraf':
-        search_engine = load_sgraf(imgs, ds_eval)
-    elif engine == 'naaf':
-        search_engine = load_naaf(imgs, ds_eval)
->>>>>>> main
     elif engine == 'blip2itm':
         base = f'blip2itm_{model}_index_{ds_size}'
         if args.add_seeds:
@@ -315,12 +307,7 @@ def main():
         if args.add_seeds:
             base = base + '_seeds'
         search_engine = load_transformer(imgs, model, base)
-<<<<<<< HEAD
     if engine not in {'text_graph', 'clip', 'blip', 'blip2'}:
-=======
-
-    if engine not in {'text_graph', 'clip'}:
->>>>>>> main
         model = NA
 
     q, rs = get_queries_gt(imgs, q, rs, abstract, ds_eval)

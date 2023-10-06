@@ -6,6 +6,12 @@ By default, the scripts will attempt to automatically download the required file
 
 From the MS-COCO, the file `annotations_trainval2017.zip` is required. It contains the captions for the images. It can be found on the [MS-COCO Web Site](https://cocodataset.org/#download)
 
+## MS-COCO-5k
+
+Fro the replicability expermients, it is also necesary the file `val2014.zip` from the [MS-COCO Web Site](https://cocodataset.org/#download).
+
+In addition, the file with the captions is needed. It can be downloaded from [`caption_datasets.zip`](http://cs.stanford.edu/people/karpathy/deepimagesent/caption_datasets.zip).
+
 ## Visual genome
 
 From Visual Genome, the following files are required:

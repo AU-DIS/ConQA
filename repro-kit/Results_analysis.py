@@ -12,7 +12,9 @@ def text_to_separable(x):
     return x.replace('gptj6-', 'gptj6*').\
                 replace('ViT-L_14_336px', 'ViT*L_14_336px').\
                 replace('ViT-B_32', 'ViT*B_32').\
-                replace('all-mpnet-base-v2', 'all*mpnet*base*v2')
+                replace('all-mpnet-base-v2', 'all*mpnet*base*v2').\
+                replace('pretrain-large', 'pretrain*large').\
+                replace('coco-large', 'coco*large')
 
 
 def text_from_separable(x):

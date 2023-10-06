@@ -6,14 +6,15 @@ This folder contains the reproducibility kit for obtaining the reported results.
 
 Base packages:
 ```
-python 3.9.12 
-networkx 3.0
-pytorch 1.11.0
-torchvision 0.12
+python 3.11.4
+networkx 3.1
+pytorch 2.0.1
+torchvision 0.15.2
 sentence_transformer 2.2.2
-transformers 4.27.3
-numpy 1.23.5
-nltk 3.6.7
+transformers 4.31.0
+numpy 1.24.3
+nltk 3.8.1
+ranx  0.3.16
 ```
 
 Installing [CLIP model](https://github.com/openai/CLIP): 
@@ -51,18 +52,24 @@ python experiment.py -z [dataset] [--add_seeds] -s [technique] -m [model] -e [qu
 
 Parameters:
 * dataset:
-  * small: index only the tagged images. (Reported results)
+  * small: index only the tagged images.
   * full: index all the images.
-* add_seeds: performs the experiments considering the images tagged as seeds by the researchers. Default: not active.
+  * coco5k: MS-COCO 5k . 
+* add_seeds: performs the experiments considering the images tagged as seeds by the researchers. Default: not active. coco5k ignores this parameter.
 * technique:
   * clip
   * blip
   * blip2
+  * sgraf: See (Small Models)[small-models/README.md] before running.
+  * naaf: See (Small Models)[small-models/README.md] before running.
   * text_graph
-* model: model used for the experiment. The values vary depending on the technique. The followings are the models reported by the authors
-  * ViT-L/14@336px: clip
-  * ViT-B/32: blip and blip2
-  * all-mpnet-base-v2: text_graph
+* model: model used by the technique. Different techniques support different models.
+  * **clip**: RN50, RN101, RN50x4, RN50x16, RN50x64, ViT-B/32, ViT-B/16, ViT-L/14, ViT-L/14@336px
+  * **blip**: pretrain, coco, pretrain-large, coco-large
+  * **blip2**: pretrain, coco
+  * **sgraf**: ignores this parameter.
+  * **naaf**: ignores this parameter.
+  * **text_graph**: all-mpnet-base-v2
 * queries:
   * full: all the queries from ConQA.
   * abs: conceptual queries from ConQA.
@@ -73,8 +80,9 @@ Parameters:
   * gptj6: all the rephrased queries for ConQA.
   * gptj6-abs: conceptual rephrased queries for ConQA.
   * gptj6-nonabs: descriptive rephrased queries for ConQA.
+  * coco5k: queries for the coco5k dataset. It can be used only with this dataset.
 
-To run all the reported experiments execute `paper_exp.sh`, all the results are present in `paper_res.csv`.
+To run all the reported experiments execute `replicability_exp.sh` and `reproducibility_exp.sh` for the replicability and reproducibilit experiments respectively.
 
 ## Semantic analisis
 

@@ -193,7 +193,7 @@ def get_queries_gt(imgs, q, rs, abstract, ds):
 
 def gt_to_qrels(gt):
     #Intern should reduce memory consumption
-    gt = {sys.intern(str(q)): {sys.intern(str(r)): 1 for r in rels} for q, rels in gt.items()}
+    gt = {sys.intern(str(q)): {sys.intern(str(r)): 1 for r in rels} for q, rels in gt.items() if len(rels) > 0}
     return Qrels(gt)
 
 
@@ -214,6 +214,7 @@ def eval(search_engine, queries, gt, ds_size, engine, model, ds_eval, metrics, s
             search[idx] = search_engine.search_text(text)[0]
     gt = gt_to_qrels(gt)
     search = rankings_to_run(search)
+    search.make_comparable(gt) 
     
     if save_run:
         res_dir = 'results'

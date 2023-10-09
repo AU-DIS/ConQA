@@ -136,8 +136,8 @@ def load_visual_genome_14(data_path):
     '''
     if not os.path.exists(data_path):
         os.makedirs(data_path)
-    objects_url = 'https://visualgenome.org/static/data/dataset/objects.json.zip' 
-    relationships_url = 'https://visualgenome.org/static/data/dataset/relationships.json.zip'
+    objects_url = 'https://homes.cs.washington.edu/~ranjay/visualgenome/data/dataset/objects.json.zip' 
+    relationships_url = 'https://homes.cs.washington.edu/~ranjay/visualgenome/data/dataset/relationships.json.zip'
     images_part_1 = 'https://cs.stanford.edu/people/rak248/VG_100K_2/images.zip'
     images_part_2 = 'https://cs.stanford.edu/people/rak248/VG_100K_2/images2.zip'
     objects_path = download_data(objects_url, data_path)
@@ -171,10 +171,9 @@ def get_coco_caption():
     -------
     captions: image_id -> List of captions
     '''
-    # data_path = f'datasets'
-    data_path = f'../../../VG1.4'
+    data_path = f'datasets'
     coco_url = 'http://images.cocodataset.org/annotations/annotations_trainval2017.zip'
-    meta_url = 'https://visualgenome.org/static/data/dataset/image_data.json.zip'
+    meta_url = 'https://homes.cs.washington.edu/~ranjay/visualgenome/data/dataset/image_data.json.zip'
     coco_path = f'{data_path}{os.sep}annotations_trainval2017.zip'
     meta_path = f'{data_path}{os.sep}image_data.json.zip'
     if not os.path.exists(coco_path):

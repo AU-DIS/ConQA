@@ -274,7 +274,11 @@ def main():
         search_engine = load_transformer(imgs, model, base)
 
     
+    print('###', len(q))
+    print('###', np.mean([len(v) for k,v in rs.items()]))
     q, rs = get_queries_gt(imgs, q, rs, abstract, ds_eval)
+    print('###', len(q))
+    print('###', np.mean([len(v) for k,v in rs.items()]))
     if headers:
         print('exp, ds size, engine, model, ds_eval, NDGC@1, NDGC@1 Std, NDGC@10, NDGC@10 Std, NDGC@100, NDGC@100 Std, NDGC, NDGC Std, R@100, R@100 Std, R@200, R@200 Std, R@500, R@500 Std, R@1000, R@1000 Std')
     eval(search_engine, q, rs, f'exp, {ds_size}, {engine}, {model}, {ds_eval}')

@@ -74,13 +74,13 @@ Parameters:
   * full: all the queries from ConQA.
   * abs: conceptual queries from ConQA.
   * nonabs: descriptive queries from ConQA.
-  * coco: the first caption in the MS-COCO dataset as query per image.
-  * excoco: all captions in the MS-COCO dataset as queries per image.
+  * coco: the first caption in the MS-COCO dataset as query per image for the images in the ConQA dataset.
+  * excoco: all captions in the MS-COCO dataset as queries per image for the images in the ConQA dataset.
   * nonabs: descriptive queries from ConQA.
   * gptj6: all the rephrased queries for ConQA.
   * gptj6-abs: conceptual rephrased queries for ConQA.
   * gptj6-nonabs: descriptive rephrased queries for ConQA.
-  * coco5k: queries for the coco5k dataset. It can be used only with this dataset.
+  * coco5k: queries for the coco5k dataset. It can be used only with coco5k dataset.
 
 To run all the reported experiments execute `replicability_exp.sh` and `reproducibility_exp.sh` for the replicability and reproducibilit experiments respectively.
 

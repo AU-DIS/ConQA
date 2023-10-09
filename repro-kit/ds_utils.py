@@ -9,7 +9,7 @@ import requests
 
 
 def read_images_ids():
-    data_path = f'../../..'
+    data_path = f'datasets'
     res = {}
     def add_to_dict(zip_path, res):
         with zipfile.ZipFile(zip_path) as zf:

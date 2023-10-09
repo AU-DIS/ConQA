@@ -11,12 +11,11 @@ if os.path.realpath(fusion_path) not in sys.path:
 
 
 from search_utils import load_images, load_queries_relevants,load_manual, merge_rels, recall, filter_tagged_images, precision, get_abstract_queries, ndcg, load_exp_gpt_j6
-# from blip_search import FastBLIPITCSearchEngine, load_default_blip_model
-# from blip2_search import FastBLIP2ITCSearchEngine, load_default_blip2_model
+from blip_search import FastBLIPITCSearchEngine, load_default_blip_model
+from blip2_search import FastBLIP2ITCSearchEngine, load_default_blip2_model
 from clip_search import CLIPSearchEngine
 from text_search import TextSearchEngine
-from vsrn_search import VSRNSearchEngine
-from vse_inf_search import VSESearchEngine
+
 from sgraf_search import SGRAFSearchEngine
 from naaf_search import NAAFSearchEngine
 from ds_utils import load_full_vg_14, get_coco_caption

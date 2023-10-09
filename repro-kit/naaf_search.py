@@ -41,17 +41,19 @@ class NAAFSearchEngine:
                  
     def load_sims(self, dataset_eval):
         if dataset_eval == 'full' or dataset_eval == 'abs' or dataset_eval == 'nonabs':
-            return torch.from_numpy(np.load('./model_embeddings/naaf_conqa_sims.npz')['data'])
+            return torch.from_numpy(np.load('./small-models/sims/naaf_conqa_sims.npz')['data'])
         elif dataset_eval == 'coco':
-            return torch.from_numpy(np.load('./model_embeddings/naaf_coco_conqa_sims.npz')['data'])
+            return torch.from_numpy(np.load('./small-models/sims/naaf_coco_sims.npz')['data'])
         elif dataset_eval == 'extcoco':
-            return torch.from_numpy(np.load('./model_embeddings/naaf_ext_coco_conqa_sims.npz')['data'])
+            return torch.from_numpy(np.load('./small-models/sims/naaf_ext_coco_sims.npz')['data'])
         elif dataset_eval == 'gptj6':
-            return torch.from_numpy(np.load('./model_embeddings/naaf_gpt_conqa_sims.npz')['data'])
+            return torch.from_numpy(np.load('./small-models/sims/naaf_gpt_sims.npz')['data'])
         elif dataset_eval == 'gptj6-abs':
-            return torch.from_numpy(np.load('./model_embeddings/naaf_gpt_abs_conqa_sims.npz')['data'])
+            return torch.from_numpy(np.load('./small-models/sims/naaf_gpt_abs_sims.npz')['data'])
         elif dataset_eval == 'gptj6-nonabs':
-            return torch.from_numpy(np.load('./model_embeddings/naaf_gpt_nonabs_conqa_sims.npz')['data'])
+            return torch.from_numpy(np.load('./small-models/sims/naaf_gpt_nonabs_sims.npz')['data'])
+        elif dataset_eval == 'coco5k':
+            return torch.from_numpy(np.load('./small-models/sims/naaf_coco5k_sims.npz')['data'])
         else:
             raise  ValueError('Invalid dataset for evaluation:' + dataset_eval)
             

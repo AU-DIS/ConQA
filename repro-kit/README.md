@@ -60,8 +60,8 @@ Parameters:
   * clip
   * blip
   * blip2
-  * sgraf: See (Small Models)[small-models/README.md] before running.
-  * naaf: See (Small Models)[small-models/README.md] before running.
+  * sgraf: See (Small Models)[small-models/SMALLMODELS.md] before running.
+  * naaf: See (Small Models)[small-models/SMALLMODELS.md] before running.
   * text_graph
 * model: model used by the technique. Different techniques support different models.
   * **clip**: RN50, RN101, RN50x4, RN50x16, RN50x64, ViT-B/32, ViT-B/16, ViT-L/14, ViT-L/14@336px

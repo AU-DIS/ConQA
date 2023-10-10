@@ -58,15 +58,18 @@ Parameters:
 * add_seeds: performs the experiments considering the images tagged as seeds by the researchers. Default: not active. coco5k ignores this parameter.
 * technique:
   * clip
-  * blip
-  * blip2
+  * blip: Blip model using ITC.
+  * blip2: Blip2 model using ITC.
+  * bliprr: Blip model using ITC re-ranking 128 top results using ITM.
+  * blip2rr: Blip2 model using ITC re-ranking 128 top results using ITM.
+  * blip2itm: Blip2 model using ITM (very slow).
   * sgraf: See (Small Models)[small-models/SMALLMODELS.md] before running.
   * naaf: See (Small Models)[small-models/SMALLMODELS.md] before running.
   * text_graph
 * model: model used by the technique. Different techniques support different models.
   * **clip**: RN50, RN101, RN50x4, RN50x16, RN50x64, ViT-B/32, ViT-B/16, ViT-L/14, ViT-L/14@336px
-  * **blip**: pretrain, coco, pretrain-large, coco-large
-  * **blip2**: pretrain, coco
+  * **blip and variations**: pretrain, coco, pretrain-large, coco-large
+  * **blip2 and variations**: pretrain, coco
   * **sgraf**: ignores this parameter.
   * **naaf**: ignores this parameter.
   * **text_graph**: all-mpnet-base-v2

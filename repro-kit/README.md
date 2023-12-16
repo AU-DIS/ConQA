@@ -58,8 +58,11 @@ Parameters:
 * add_seeds: performs the experiments considering the images tagged as seeds by the researchers. Default: not active. coco5k ignores this parameter.
 * technique:
   * clip
-  * blip
-  * blip2
+  * blip: Blip model using ITC.
+  * blip2: Blip2 model using ITC.
+  * bliprr: Blip model using ITC re-ranking 128 top results using ITM.
+  * blip2rr: Blip2 model using ITC re-ranking 128 top results using ITM.
+  * blip2itm: Blip2 model using ITM (very slow).
   * sgraf: See (Small Models)[small-models/SMALLMODELS.md] before running.
   * naaf: See (Small Models)[small-models/SMALLMODELS.md] before running.
   * text_graph

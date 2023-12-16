@@ -11,9 +11,10 @@ if os.path.realpath(fusion_path) not in sys.path:
 
 
 from search_utils import load_images, load_queries_relevants,load_manual, merge_rels, filter_tagged_images, get_abstract_queries, load_exp_gpt_j6
-from blip_search import FastBLIPITCSearchEngine, load_default_blip_model
-from blip2_search import FastBLIP2ITCSearchEngine, FastBLIP2ITMSearchEngine, load_default_blip2_model
+from blip_search import FastBLIPITCSearchEngine, FastBLIPITCRRSearchEngine, load_default_blip_model
+from blip2_search import FastBLIP2ITCSearchEngine, FastBLIP2ITMSearchEngine, FastBLIP2ITCRRSearchEngine, load_default_blip2_model
 from clip_search import CLIPSearchEngine
+from st_clip_search import STCLIPSearchEngine
 from text_search import TextSearchEngine
 
 from sgraf_search import SGRAFSearchEngine
@@ -46,7 +47,17 @@ def load_data(ds_size, seeds):
 
 
 def load_or_train_blip(images, base, model):
-    search_engine = FastBLIPITCSearchEngine(load_default_blip_model(model), inference_device='cpu')
+    search_engine = FastBLIPITCSearchEngine(load_default_blip_model(model), inference_device='cuda')
+    if os.path.exists(base):
+        search_engine.load(base)
+    else:
+        search_engine.index(images)
+        search_engine.save(base)
+    return search_engine
+
+
+def load_or_train_blip_rerank(images, base, model):
+    search_engine = FastBLIPITCRRSearchEngine(load_default_blip_model(model), inference_device='cuda')
     if os.path.exists(base):
         search_engine.load(base)
     else:
@@ -64,6 +75,17 @@ def load_or_train_blip2(images, base, model_type):
         search_engine.save(base)
     return search_engine
 
+
+def load_or_train_blip2_rerank(images, base, model_type):
+    search_engine = FastBLIP2ITCRRSearchEngine(*(load_default_blip2_model(model_type)[:2]), inference_device='cuda')
+    if os.path.exists(base):
+        search_engine.load(base)
+    else:
+        search_engine.index(images)
+        search_engine.save(base)
+    return search_engine
+
+
 def load_or_train_blip2_itm(images, base, model_type):
     search_engine = FastBLIP2ITMSearchEngine(*(load_default_blip2_model(model_type)[:2]), inference_device='cuda')
     if os.path.exists(base):
@@ -76,6 +98,15 @@ def load_or_train_blip2_itm(images, base, model_type):
 
 def load_or_train_clip(images, model, base):
     search_engine = CLIPSearchEngine(*clip.load(model))
+    if os.path.exists(base):
+        search_engine.load(base)
+    else:
+        search_engine.index(images)
+        search_engine.save(base)
+    return search_engine
+
+def load_or_train_stclip(images, model, base):
+    search_engine = STCLIPSearchEngine(model)
     if os.path.exists(base):
         search_engine.load(base)
     else:
@@ -242,7 +273,7 @@ def main():
     parser = argparse.ArgumentParser(prog = 'experiments', description = 'Runs Experiments')
     parser.add_argument('-z', '--dataset_size', choices=['small', 'full', 'coco5k',]) 
     parser.add_argument('--add_seeds', action='store_true')
-    parser.add_argument('-s', '--search_engine', choices=['clip', 'blip', 'blip2', 'blip2itm', 'text_graph', 'sgraf', 'naaf']) 
+    parser.add_argument('-s', '--search_engine', choices=['clip', 'stclip', 'blip', 'bliprr', 'blip2', 'blip2rr', 'blip2itm', 'text_graph', 'sgraf', 'naaf']) 
     parser.add_argument('-m', '--model', 
                         default='ViT-B/32',
                         choices=["RN50", "RN101", "RN50x4", "RN50x16", "RN50x64", "ViT-B/32", "ViT-B/16", "ViT-L/14", "ViT-L/14@336px", "all-mpnet-base-v2" , "pretrain", "coco", "pretrain-large", "coco-large"]) 
@@ -266,12 +297,16 @@ def main():
     if engine == 'clip' and model not in ["RN50", "RN101", "RN50x4", "RN50x16", "RN50x64", "ViT-B/32", "ViT-B/16", "ViT-L/14", "ViT-L/14@336px"]:
         print('Unsupported model for clip: "RN50", "RN101", "RN50x4", "RN50x16", "RN50x64", "ViT-B/32", "ViT-B/16", "ViT-L/14", "ViT-L/14@336px"')
         exit()
-    
-    if (engine == 'blip2' or engine == 'blip2itm') and model not in ["pretrain", "coco"]:
+
+    if engine == 'stclip' and model not in ["ViT-B/32", "ViT-B/16", "ViT-L/14"]:
+        print('Unsupported model for clip: "RN50", "RN101", "RN50x4", "RN50x16", "RN50x64", "ViT-B/32", "ViT-B/16", "ViT-L/14", "ViT-L/14@336px"')
+        exit()
+
+    if (engine == 'blip2' or engine == 'blip2rr' or engine == 'blip2itm') and model not in ["pretrain", "coco"]:
         print('Unsupported model for blip2: "pretrain", "coco"')
         exit()
 
-    if engine == 'blip' and model not in ["pretrain", "coco", "pretrain-large", "coco-large"]:
+    if (engine == 'blip' or engine == 'bliprr') and model not in ["pretrain", "coco", "pretrain-large", "coco-large"]:
         print('Unsupported model for blip2: "pretrain", "coco", "pretrain-large", "coco-large"')
         exit()
 
@@ -288,16 +323,31 @@ def main():
         if args.add_seeds:
             base = base + '_seeds'
         search_engine = load_or_train_clip(imgs, model, base)
+    if engine == 'stclip':
+        base = f'stclip_{model.replace("/", "_").replace("@","_")}_index_{ds_size}'
+        if args.add_seeds:
+            base = base + '_seeds'
+        search_engine = load_or_train_stclip(imgs, model, base)
     elif engine == 'blip':
         base = f'fast_blip_{model}_index_{ds_size}'
         if args.add_seeds:
             base = base + '_seeds'
         search_engine = load_or_train_blip(imgs, base, model)
+    elif engine == 'bliprr':
+        base = f'fast_blip_rerank_{model}_index_{ds_size}'
+        if args.add_seeds:
+            base = base + '_seeds'
+        search_engine = load_or_train_blip_rerank(imgs, base, model)
     elif engine == 'blip2':
         base = f'blip2_{model}_index_{ds_size}'
         if args.add_seeds:
             base = base + '_seeds'
         search_engine = load_or_train_blip2(imgs, base, model)
+    elif engine == 'blip2rr':
+        base = f'blip2_rerank_{model}_index_{ds_size}'
+        if args.add_seeds:
+            base = base + '_seeds'
+        search_engine = load_or_train_blip2_rerank(imgs, base, model)
     elif engine == 'blip2itm':
         base = f'blip2itm_{model}_index_{ds_size}'
         if args.add_seeds:
@@ -312,12 +362,11 @@ def main():
         if args.add_seeds:
             base = base + '_seeds'
         search_engine = load_transformer(imgs, model, base)
-    if engine not in {'text_graph', 'clip', 'blip', 'blip2'}:
+    if engine not in {'text_graph', 'clip', 'stclip', 'blip', 'bliprr', 'blip2', 'blip2rr', 'blip2itc'}:
         model = NA
 
     q, rs = get_queries_gt(imgs, q, rs, abstract, ds_eval)
-    print('###', len(q))
-    print('###', np.mean([len(v) for k,v in rs.items()]))
+    
     if headers:
         print('ds size, engine, model, ds_eval, ' + ', '.join(metrics))
     if args.add_seeds:

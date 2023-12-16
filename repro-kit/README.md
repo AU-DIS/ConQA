@@ -17,6 +17,8 @@ nltk 3.8.1
 ranx  0.3.16
 ```
 
+A full description of all the package used for the experiments and their versions can be found in the Conda environment file `environment.yml`
+
 Installing [CLIP model](https://github.com/openai/CLIP): 
 ```
 pip install ftfy regex tqdm
@@ -57,7 +59,8 @@ Parameters:
   * coco5k: MS-COCO 5k . 
 * add_seeds: performs the experiments considering the images tagged as seeds by the researchers. Default: not active. coco5k ignores this parameter.
 * technique:
-  * clip
+  * clip: CLIP model based on the original source code released by OpenIA.
+  * stclip: CLIP model based on sentence-transformers released.
   * blip: Blip model using ITC.
   * blip2: Blip2 model using ITC.
   * bliprr: Blip model using ITC re-ranking 128 top results using ITM.
@@ -68,6 +71,7 @@ Parameters:
   * text_graph
 * model: model used by the technique. Different techniques support different models.
   * **clip**: RN50, RN101, RN50x4, RN50x16, RN50x64, ViT-B/32, ViT-B/16, ViT-L/14, ViT-L/14@336px
+  * **stclip**: ViT-B/32, ViT-B/16, ViT-L/14
   * **blip and variations**: pretrain, coco, pretrain-large, coco-large
   * **blip2 and variations**: pretrain, coco
   * **sgraf**: ignores this parameter.

@@ -362,6 +362,7 @@ def main():
         if args.add_seeds:
             base = base + '_seeds'
         search_engine = load_transformer(imgs, model, base)
+
     if engine not in {'text_graph', 'clip', 'stclip', 'blip', 'bliprr', 'blip2', 'blip2rr', 'blip2itc'}:
         model = NA
 

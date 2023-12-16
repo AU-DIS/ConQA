@@ -68,8 +68,8 @@ Parameters:
   * text_graph
 * model: model used by the technique. Different techniques support different models.
   * **clip**: RN50, RN101, RN50x4, RN50x16, RN50x64, ViT-B/32, ViT-B/16, ViT-L/14, ViT-L/14@336px
-  * **blip**: pretrain, coco, pretrain-large, coco-large
-  * **blip2**: pretrain, coco
+  * **blip and variations**: pretrain, coco, pretrain-large, coco-large
+  * **blip2 and variations**: pretrain, coco
   * **sgraf**: ignores this parameter.
   * **naaf**: ignores this parameter.
   * **text_graph**: all-mpnet-base-v2

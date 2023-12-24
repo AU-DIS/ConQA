@@ -42,7 +42,7 @@ git checkout 3a29b7410476bf5f2ba0955827390eb6ea1f4f9d
 cd ..
 ```
 
-**NOTE**: It is required to download Visual Genome and MS-COCO dataset into the folder `datasets` to run the reproducibility kit. More information on the required files can be found in [dataset documentation](datasets/FILES.md)](datasets/FILES.md).
+**NOTE**: It is required to download Visual Genome and MS-COCO dataset into the folder `datasets` to run the reproducibility kit. More information on the required files can be found in [dataset documentation](datasets/FILES.md).
 
 ## Running retrieval experiments.
 
@@ -56,7 +56,8 @@ Parameters:
 * dataset:
   * small: index only the tagged images.
   * full: index all the images.
-  * coco5k: MS-COCO 5k . 
+  * coco5k: MS-COCO 5k. 
+  * ecir23: Dataset for the experiment reported as MS-COCO 5k in ECIR '23 paper [Scene-Centric vs. Object-Centric Image-Text Cross-Modal Retrieval: A Reproducibility Study](https://link.springer.com/chapter/10.1007/978-3-031-28241-6_5). 
 * add_seeds: performs the experiments considering the images tagged as seeds by the researchers. Default: not active. coco5k ignores this parameter.
 * technique:
   * clip: CLIP model based on the original source code released by OpenIA.
@@ -88,6 +89,7 @@ Parameters:
   * gptj6-abs: conceptual rephrased queries for ConQA.
   * gptj6-nonabs: descriptive rephrased queries for ConQA.
   * coco5k: queries for the coco5k dataset. It can be used only with coco5k dataset.
+  * ecir23: queries for the ecir23 dataset. It can be used only with ecir23 dataset.
 
 To run all the reported experiments execute `replicability_exp.sh` and `reproducibility_exp.sh` for the replicability and reproducibilit experiments respectively.
 

@@ -2,7 +2,7 @@ import zipfile
 import json
 import os
 from ds_utils import download_data
-
+import pandas as pd
 
 def check_coco(data_path=f'datasets'):
     data_path = f'datasets'
@@ -43,5 +43,23 @@ def load_coco5k_imgs(data_path=f'datasets'):
 
     images = {}
     for img in data:
-        images[img['imgid']] = ['datasets/val2014.zip', 'val2014/'+img['filename']]
+        images[img['imgid']] = [f'{data_path}/val2014.zip', 'val2014/'+img['filename']]
     return images
+
+def load_ecir23_imgs(data_path=f'datasets'): 
+    check_coco(data_path)
+    test = pd.read_csv(f'{data_path}/ecir23/mscoco/df_test.csv')
+    images = {}
+    for img in test.itertuples():
+        images[img.id] = [f'{data_path}/val2014.zip', f'val2014/{img.file_name}']
+    return images
+    
+def load_ecir23_queries(data_path=f'datasets'):
+    check_coco(data_path)
+    test = pd.read_csv(f'{data_path}/ecir23/mscoco/df_test.csv')
+    queries = {}
+    rels = {}
+    for pos, query in enumerate(test.itertuples()):
+        queries[pos] = query.caption
+        rels[pos] = [query.id]
+    return queries, rels 

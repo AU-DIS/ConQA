@@ -46,13 +46,15 @@ The following image presents an example of how the task was presented to the wor
 The folder `repro-kit` contains scripts to reproduce the reported results. More information can be found on the [readme file of the repro-kit](repro-kit/README.md).
 
 ## Citation
+If you find this repository helpful, feel free to cite our paper "Does the performance of Text-to-Image retrieval models generalize beyond captions-as-a-query?":
 
 ```
-@misc{
-    title={ConQA: Conceptual query answering in text-to-image retrieval},
-    authors={Rodriguez, Juan Manuel and Tavassoli, Nima and
-            Lissandrini, Matteo and Mottin, Davide and
-            Levy, Eliezer and Lederman, Gil and Sivov, Dima},
-    year={2023}
+@inproceedings{rodriguez-2023-caption-as-query,
+    author = {Rodriguez, Juan Manuel and Tavassoli, Nima and Levy, Eliezer and Lederman, Gil and Sivov, Dima and Lissandrini, Matteo and Mottin, Davide},
+    booktitle = {ECIR 2024: 46th European Conference on Information Retrieval},
+    month = {March},
+    publisher = {Springer},
+    title = {Does the performance of Text-to-Image retrieval models generalize beyond captions-as-a-query?},
+    year = {2024}
 }
 ```

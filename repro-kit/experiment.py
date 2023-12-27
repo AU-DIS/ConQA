@@ -21,7 +21,7 @@ from sgraf_search import SGRAFSearchEngine
 from naaf_search import NAAFSearchEngine
 from ds_utils import load_full_vg_14, get_coco_caption
 
-from coco_utils import load_coco5k_queries, load_coco5k_imgs
+from coco_utils import load_coco5k_queries, load_coco5k_imgs, load_ecir23_imgs, load_ecir23_queries
 from ranx import Qrels, Run, evaluate
 
 NA = 'n/a'
@@ -30,6 +30,9 @@ NA = 'n/a'
 def load_data(ds_size, seeds):
     if ds_size == 'coco5k':
         imgs = load_coco5k_imgs()
+        return imgs, None, None, None, None
+    if ds_size == 'ecir23':
+        imgs = load_ecir23_imgs()
         return imgs, None, None, None, None
     imgs = load_images()
     q, r, rs = load_queries_relevants()
@@ -180,6 +183,8 @@ def get_queries_gt(imgs, q, rs, abstract, ds):
         return q, rs
     if ds == 'coco5k':
         return load_coco5k_queries()
+    if ds == 'ecir23':
+        return load_ecir23_queries()
     if ds == 'gptj6':
         ext = load_exp_gpt_j6()
         nq = {}
@@ -271,13 +276,13 @@ def eval(search_engine, queries, gt, ds_size, engine, model, ds_eval, metrics, s
     
 def main():
     parser = argparse.ArgumentParser(prog = 'experiments', description = 'Runs Experiments')
-    parser.add_argument('-z', '--dataset_size', choices=['small', 'full', 'coco5k',]) 
+    parser.add_argument('-z', '--dataset_size', choices=['small', 'full', 'coco5k', 'ecir23']) 
     parser.add_argument('--add_seeds', action='store_true')
     parser.add_argument('-s', '--search_engine', choices=['clip', 'stclip', 'blip', 'bliprr', 'blip2', 'blip2rr', 'blip2itm', 'text_graph', 'sgraf', 'naaf']) 
     parser.add_argument('-m', '--model', 
                         default='ViT-B/32',
                         choices=["RN50", "RN101", "RN50x4", "RN50x16", "RN50x64", "ViT-B/32", "ViT-B/16", "ViT-L/14", "ViT-L/14@336px", "all-mpnet-base-v2" , "pretrain", "coco", "pretrain-large", "coco-large"]) 
-    parser.add_argument('-e', '--dataset_eval', choices=['full', 'abs', 'nonabs', 'coco', 'extcoco', 'coco5k', 'gptj6', 'gptj6-abs', 'gptj6-nonabs'])
+    parser.add_argument('-e', '--dataset_eval', choices=['full', 'abs', 'nonabs', 'coco', 'extcoco', 'coco5k', 'gptj6', 'gptj6-abs', 'gptj6-nonabs', 'ecir23'])
     parser.add_argument('-t', '--headers', action='store_true')
     parser.add_argument('-r', '--ranx_metrics', default='ndcg@1,ndcg@10,ndcg@100,ndcg,recall@100,recall@200,recall@500,recall@1000')
     parser.add_argument('--save_experiment', action='store_true')
@@ -293,7 +298,11 @@ def main():
     if ds_eval == 'coco5k' and ds_size != 'coco5k' or ds_eval != 'coco5k' and ds_size == 'coco5k':
         print('If dataset_size and daset_eval is set to coco5k the other parameter should be coco5k')
         exit()
-    
+
+    if ds_eval == 'ecir23' and ds_size != 'ecir23' or ds_eval != 'ecir23' and ds_size == 'ecir23':
+        print('If dataset_size and daset_eval is set to ecir23 the other parameter should be ecir23')
+        exit()
+
     if engine == 'clip' and model not in ["RN50", "RN101", "RN50x4", "RN50x16", "RN50x64", "ViT-B/32", "ViT-B/16", "ViT-L/14", "ViT-L/14@336px"]:
         print('Unsupported model for clip: "RN50", "RN101", "RN50x4", "RN50x16", "RN50x64", "ViT-B/32", "ViT-B/16", "ViT-L/14", "ViT-L/14@336px"')
         exit()

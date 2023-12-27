@@ -91,7 +91,7 @@ Parameters:
   * coco5k: queries for the coco5k dataset. It can be used only with coco5k dataset.
   * ecir23: queries for the ecir23 dataset. It can be used only with ecir23 dataset.
 
-To run all the reported experiments execute `replicability_exp.sh` and `reproducibility_exp.sh` for the replicability and reproducibilit experiments respectively.
+To run all the reported experiments execute `replicability_exp.sh` and `reproducibility_exp.sh` for the replicability and reproducibilit experiments respectively. Finally, `ecir23.sh` reproduce the results reported as MS-COCO 5k in ECIR '23 paper [Scene-Centric vs. Object-Centric Image-Text Cross-Modal Retrieval: A Reproducibility Study](https://link.springer.com/chapter/10.1007/978-3-031-28241-6_5).
 
 ## Semantic analisis
 
